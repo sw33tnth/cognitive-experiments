@@ -5,7 +5,7 @@ This repository contains a web-based cognitive experiment implemented using jsPs
 ## Experiment Overview
 
 - **Purpose**: To measure inhibitory control (Go/No-Go) and sustained attention (SART) using a mobile-friendly web-based interface.
-- **Deployment**: The experiment is hosted at [https://sw33tnth.github.io/Cognitive-Experiments/](https://sw33tnth.github.io/Cognitive-Experiments/).
+- **Deployment**: The experiment is hosted at [https://sw33tnth.github.io/cognitive-experiments/](https://sw33tnth.github.io/cognitive-experiments/).
 - **Files**:
   - `index.html` (or `sart.html`): Main experiment file containing the Go/No-Go and SART tasks.
   - `jspsych/`: Directory containing jsPsych library files (`jspsych.js`, plugins, and `jspsych.css`).
