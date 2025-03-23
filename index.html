@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Experiments</title>
+    <!-- Viewport meta tag for proper mobile scaling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Use local jsPsych files as in the working version -->
+    <script src="jspsych/dist/jspsych.js"></script>
+    <script src="jspsych/dist/plugin-html-button-response.js"></script>
+    <script src="jspsych/dist/plugin-html-keyboard-response.js"></script>
+    <script src="jspsych/dist/plugin-image-keyboard-response.js"></script>
+    <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px; /* Base font size for desktop */
+            touch-action: manipulation;
+        }
+        #jspsych-experiment {
+            width: 100%;
+            max-width: 600px; /* Default for desktop */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .jspsych-content-wrapper, .jspsych-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .jspsych-content p, .jspsych-content input {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .jspsych-btn {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 22px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        /* Style for circles (Go/No-Go task) */
+        .go-no-go-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+        }
+        /* Style for numbers (SART task) */
+        .sart-number {
+            font-size: 60px;
+            line-height: 60px;
+            padding: 10px;
+        }
+
+        /* Media query for mobile devices (screens smaller than 768px) */
+        @media (max-width: 768px) {
+            body {
+                font-size: 4vw; /* Scale font size based on viewport width */
+            }
+            #jspsych-experiment {
+                max-width: 90%; /* Use more of the screen width on mobile */
+                padding: 10px;
+            }
+            .jspsych-content p {
+                font-size: 5vw; /* Larger text for instructions */
+                margin: 15px 0;
+            }
+            .jspsych-btn {
+                margin-top: 80px; /* Increased spacing from the circle */
+                padding: 30px 60px; /* Larger padding for a bigger button */
+                font-size: 7vw; /* Larger button text */
+                border-radius: 12px;
+            }
+            .go-no-go-circle {
+                width: 50vw; /* Larger circle size for visibility */
+                height: 50vw;
+            }
+            .sart-number {
+                font-size: 18vw; /* Larger number size */
+                line-height: 18vw;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="jspsych-experiment"></div>
+    <script>
+        // Detect if the user is on a mobile device
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        var responseInstruction = isMobile ? "Tap the button below" : "Click the button below";
+
+        // Generate a 5-digit random Participant ID
+        var participant_id = Math.floor(10000 + Math.random() * 90000).toString(); // Generates a number between 10000 and 99999
+        console.log("Generated Participant ID:", participant_id);
+
+        // Global variables to store results
+        var go_accuracy = 0;
+        var go_rt = 0;
+        var sart_accuracy = 0;
+        var sart_rt = 0;
+
+        // Google Form URL with pre-filled entries for all experiment data
+        var google_form_url = "https://docs.google.com/forms/d/e/1FAIpQLSeM82QY45fS3bG5zHNOcjgsgjVsD8x9ASZyl2yee_e-7hCUxQ/viewform?usp=pp_url&entry.1684046246={participant_id}&entry.237319300={go_accuracy}&entry.1875036854={go_rt}&entry.1708989072={sart_accuracy}&entry.1016723888={sart_rt}";
+
+        var jsPsych = initJsPsych({
+            display_element: 'jspsych-experiment',
+            on_finish: function(data) {
+                try {
+                    // Compute the results
+                    var all_data = jsPsych.data.get();
+
+                    var go_no_go_trials = all_data.filter({ experiment: 'GoNoGo' });
+                    var correct_go = go_no_go_trials.filter({ task_type: 'go', correct: true }).count();
+                    var correct_no_go = go_no_go_trials.filter({ task_type: 'no-go', correct: true }).count();
+                    var total_correct = correct_go + correct_no_go;
+                    var total_trials = go_no_go_trials.count();
+                    go_accuracy = total_trials > 0 ? Math.round((total_correct / total_trials) * 100) : 0;
+                    var go_correct_rt_trials = go_no_go_trials.filter({ task_type: 'go', correct: true });
+                    go_rt = go_correct_rt_trials.select('rt').mean();
+                    go_rt = isNaN(go_rt) ? 0 : Math.round(go_rt);
+                    console.log("Go/No-Go: Correct Go:", correct_go, "Correct No-Go:", correct_no_go, "Total:", total_trials, "Accuracy:", go_accuracy, "RT:", go_rt);
+
+                    var sart_trials = all_data.filter({ experiment: 'SART' });
+                    var correct_go_sart = sart_trials.filter({ task_type: 'go', correct: true }).count();
+                    var correct_no_go_sart = sart_trials.filter({ task_type: 'no-go', correct: true }).count();
+                    var total_correct_sart = correct_go_sart + correct_no_go_sart;
+                    var total_trials_sart = sart_trials.count();
+                    sart_accuracy = total_trials_sart > 0 ? Math.round((total_correct_sart / total_trials_sart) * 100) : 0;
+                    var sart_correct_rt_trials = sart_trials.filter({ task_type: 'go', correct: true });
+                    sart_rt = sart_correct_rt_trials.select('rt').mean();
+                    sart_rt = isNaN(sart_rt) ? 0 : Math.round(sart_rt);
+                    console.log("SART: Correct Go:", correct_go_sart, "Correct No-Go:", correct_no_go_sart, "Total:", total_trials_sart, "Accuracy:", sart_accuracy, "RT:", sart_rt);
+
+                    // Log all trial data
+                    console.log("=== ALL TRIAL DATA START ===");
+                    console.log(JSON.stringify(all_data.values(), null, 2));
+                    console.log("=== ALL TRIAL DATA END ===");
+
+                    // Add participant_id to the data (for logging purposes)
+                    jsPsych.data.addProperties({ participant_id: participant_id });
+
+                    // Construct the Google Form URL and redirect
+                    var submit_url = google_form_url
+                        .replace('{participant_id}', encodeURIComponent(participant_id))
+                        .replace('{go_accuracy}', go_accuracy)
+                        .replace('{go_rt}', go_rt)
+                        .replace('{sart_accuracy}', sart_accuracy)
+                        .replace('{sart_rt}', sart_rt);
+                    console.log("Redirecting to:", submit_url);
+                    window.location.href = submit_url; // Auto-redirect to Google Form
+                } catch (error) {
+                    console.error("Error in on_finish:", error);
+                }
+            }
+        });
+
+        // --- Go/No-Go Experiment ---
+        var go_no_go_welcome = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: "<p>Welcome to the Go/No-Go Task!</p>",
+            choices: ["Start"]
+        };
+
+        var go_no_go_instructions = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: "<p>" + responseInstruction + " when you see a GREEN circle (Go).<br>Do nothing for a RED circle (No-Go).</p>",
+            choices: ["Begin"]
+        };
+
+        var go_no_go_fixation = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "<div style='font-size:60px;'>+</div>",
+            choices: "NO_KEYS",
+            trial_duration: 1000
+        };
+
+        var go_no_go_trial = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ["Respond"],
+            trial_duration: 1000,
+            data: { 
+                experiment: 'GoNoGo',
+                task_type: jsPsych.timelineVariable('trial_type', true)
+            },
+            on_finish: function(data) {
+                console.log("Raw task_type:", data.task_type);
+                // Button response is 0 if clicked, null if timed out
+                data.response = data.response === 0 ? 'respond' : null;
+                data.correct = (data.task_type === 'go' && data.response === 'respond') || (data.task_type === 'no-go' && data.response === null);
+                console.log("Go/No-Go Trial - Response:", data.response, "RT:", data.rt, "Task Type:", data.task_type, "Correct:", data.correct);
+            }
+        };
+
+        // Added: Random ITI for Go/No-Go (200-500 ms)
+        var go_no_go_iti = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "",
+            choices: "NO_KEYS",
+            trial_duration: function() {
+                return Math.floor(Math.random() * (500 - 200 + 1)) + 200; // Random ITI between 200-500 ms
+            }
+        };
+
+        var go_no_go_procedure = {
+            timeline: [go_no_go_fixation, go_no_go_trial, go_no_go_iti], // Added ITI to timeline
+            timeline_variables: [
+                { stimulus: "<div class='go-no-go-circle' style='background-color:green;'></div>", trial_type: 'go' },
+                { stimulus: "<div class='go-no-go-circle' style='background-color:red;'></div>", trial_type: 'no-go' }
+            ],
+            sample: {
+                type: 'custom',
+                fn: function() {
+                    var trials = [];
+                    for (var i = 0; i < 96; i++) trials.push(0); // 96 Go trials
+                    for (var i = 0; i < 24; i++) trials.push(1); // 24 No-Go trials
+                    return jsPsych.randomization.shuffle(trials);
+                }
+            }
+        };
+
+        // --- SART Experiment ---
+        var sart_welcome = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: "<p>Welcome to the SART!</p>",
+            choices: ["Start"]
+        };
+
+        var sart_instructions = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: "<p>" + responseInstruction + " for all numbers EXCEPT 3.<br>Do nothing when you see 3.</p>",
+            choices: ["Begin"]
+        };
+
+        var sart_fixation = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "<div style='font-size:60px;'>+</div>",
+            choices: "NO_KEYS",
+            trial_duration: 500 // Reduced from 900 ms to 500 ms
+        };
+
+        var numbers = [
+            { num: "<div class='sart-number'>1</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>2</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>3</div>", trial_type: 'no-go' },
+            { num: "<div class='sart-number'>4</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>5</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>6</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>7</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>8</div>", trial_type: 'go' },
+            { num: "<div class='sart-number'>9</div>", trial_type: 'go' }
+        ];
+
+        var sart_trial = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: jsPsych.timelineVariable('num'),
+            choices: ["Respond"],
+            trial_duration: 500, // Reduced from 1000 ms to 500 ms
+            data: { 
+                experiment: 'SART',
+                task_type: jsPsych.timelineVariable('trial_type', true)
+            },
+            on_finish: function(data) {
+                console.log("Raw task_type:", data.task_type);
+                // Button response is 0 if clicked, null if timed out
+                data.response = data.response === 0 ? 'respond' : null;
+                data.correct = (data.task_type === 'go' && data.response === 'respond') || (data.task_type === 'no-go' && data.response === null);
+                console.log("SART Trial - Response:", data.response, "RT:", data.rt, "Task Type:", data.task_type, "Correct:", data.correct);
+            }
+        };
+
+        // Added: Random ITI for SART (200-500 ms)
+        var sart_iti = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "",
+            choices: "NO_KEYS",
+            trial_duration: function() {
+                return Math.floor(Math.random() * (500 - 200 + 1)) + 200; // Random ITI between 200-500 ms
+            }
+        };
+
+        var sart_procedure = {
+            timeline: [sart_fixation, sart_trial, sart_iti], // Added ITI to timeline
+            timeline_variables: numbers,
+            sample: {
+                type: 'custom',
+                fn: function() {
+                    var trials = [];
+                    // Adjusted: Generate 96 random numbers excluding 3 (index 2)
+                    for (var i = 0; i < 96; i++) {
+                        var num = Math.floor(Math.random() * 8); // Random number from 0-7 (corresponding to 1, 2, 4, 5, 6, 7, 8, 9)
+                        if (num >= 2) num += 1; // Skip index 2 (number 3), so 2 becomes 3, 3 becomes 4, etc.
+                        trials.push(num);
+                    }
+                    // Add exactly 24 '3's (index 2)
+                    for (var i = 0; i < 24; i++) trials.push(2);
+                    return jsPsych.randomization.shuffle(trials);
+                }
+            }
+        };
+
+        // Full timeline
+        var timeline = [
+            go_no_go_welcome,
+            go_no_go_instructions,
+            go_no_go_procedure,
+            sart_welcome,
+            sart_instructions,
+            sart_procedure
+        ];
+
+        // Start the experiment
+        jsPsych.run(timeline);
+    </script>
+</body>
+</html>
