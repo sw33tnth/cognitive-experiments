@@ -26,6 +26,9 @@ This repository contains a web-based cognitive experiment implemented using jsPs
 - **Data Collected**:
   - Accuracy: Percentage of correct responses.
   - Reaction Time (RT): Mean RT for correct go responses (ms).
+ 
+    <img width="987" height="358" alt="Screenshot 2026-01-13 073326" src="https://github.com/user-attachments/assets/10576e7f-7b30-4d65-9de8-61f00be164b0" />
+
 
 ### SART (Sustained Attention to Response Task)
 - **Purpose**: Measures sustained attention and inhibitory control by requiring participants to respond to "go" stimuli (numbers 1, 2, 4–9) and withhold responses to "no-go" stimuli (number 3).
@@ -41,6 +44,9 @@ This repository contains a web-based cognitive experiment implemented using jsPs
 - **Data Collected**:
   - Accuracy: Percentage of correct responses.
   - Reaction Time (RT): Mean RT for correct go responses (ms).
+
+<img width="1016" height="358" alt="Screenshot 2026-01-13 073435" src="https://github.com/user-attachments/assets/0d46f8b3-2c88-44e4-ae15-bfe66fdf65ae" />
+
 
 ## Validity and Reliability
 - **Go/No-Go**:
